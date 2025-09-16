@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/819211084261661477/953df4d6822a4e368c20026d7aca7300/artifacts
+end_time: 1757942923854
+entry_point_name: ''
+experiment_id: '819211084261661477'
+lifecycle_stage: active
+run_id: 953df4d6822a4e368c20026d7aca7300
+run_name: adaptable-moose-19
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1757942913757
+status: 3
+tags: []
+user_id: manon
