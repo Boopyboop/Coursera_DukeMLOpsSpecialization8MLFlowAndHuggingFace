@@ -1,0 +1,10 @@
+name: ocr-mlops-demo
+
+conda_env: null
+# We use venv/requirements.txt flow; container build will install requirements
+entry_points:
+  main:
+    parameters:
+      alpha: {type: float, default: 1.0}
+      max_iter: {type: int, default: 200}
+    command: "python src/ocr/trainer.py --alpha {alpha} --max_iter {max_iter}"
