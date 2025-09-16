@@ -1,0 +1,21 @@
+# Container for running reproducible training runs
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# install system deps needed for pillow
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libjpeg-dev \
+    zlib1g-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+ENV PYTHONUNBUFFERED=1
+
+# default entry: run training with args passed to docker run
+ENTRYPOINT ["python", "src/ocr/trainer.py"]
