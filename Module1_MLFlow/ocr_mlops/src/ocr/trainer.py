@@ -19,7 +19,7 @@ from sklearn.model_selection import train_test_split
 import mlflow
 import mlflow.sklearn
 
-from .utils import image_to_feature_vector
+from utils import image_to_feature_vector, clean_mlruns, ensure_mlruns_dirs, ensure_experiment
 
 
 def build_synthetic_dataset(n_samples: int = 500, n_features: int = 28 * 28, seed: int = 42):
@@ -44,7 +44,12 @@ def train_and_log(
     Train a small logistic regression model and log run to MLflow.
     If use_images_dir is provided, attempt to read images (experimental).
     """
-    mlflow.set_experiment(experiment_name)
+    # Ensure mlruns and mlruns/.trash exist
+    ensure_mlruns_dirs()
+
+    # Ensure experiment exists before MLflow logging
+    exp_id = ensure_experiment(experiment_name)
+    #mlflow.set_experiment(experiment_name = exp_id)
 
     # prepare dataset
     if use_images_dir:
@@ -68,7 +73,7 @@ def train_and_log(
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    with mlflow.start_run():
+    with mlflow.start_run(experiment_id=exp_id) as run:
         # log parameters
         mlflow.log_param("alpha", alpha)
         mlflow.log_param("max_iter", max_iter)
@@ -99,7 +104,6 @@ def train_and_log(
 
         print(f"Logged run with accuracy: {acc:.4f}")
         # return run info for tests or scripts
-        run = mlflow.active_run()
         return run.info.run_id
         
 
@@ -110,4 +114,12 @@ if __name__ == "__main__":
     parser.add_argument("--max_iter", type=int, default=200)
     parser.add_argument("--images_dir", type=str, default=None)
     args = parser.parse_args()
-    train_and_log(args.experiment, args.alpha, args.max_iter, args.images_dir)
+
+    try:
+        run_id = train_and_log(args.experiment, args.alpha, args.max_iter, args.images_dir)
+    except Exception as e:
+        print(f"Error occurred: {e}. Cleaning mlruns/ and retrying once...")
+        clean_mlruns()
+        run_id = train_and_log(args.experiment, args.alpha, args.max_iter, args.images_dir)
+
+    print(f"Final run_id: {run_id}")
