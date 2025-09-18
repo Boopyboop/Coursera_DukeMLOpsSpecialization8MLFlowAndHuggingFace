@@ -1,6 +1,7 @@
 name: ocr-mlops-demo
 
 conda_env: null
+experiment: ocr_demo
 # We use venv/requirements.txt flow; container build will install requirements
 entry_points:
   main:
