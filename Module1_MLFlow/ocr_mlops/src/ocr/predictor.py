@@ -8,7 +8,7 @@ from typing import Any
 import mlflow.pyfunc
 import numpy as np
 from flask import Flask, request, jsonify
-from .utils import image_to_feature_vector
+from utils import image_to_feature_vector
 
 MODEL_URI_ENV = "OCR_MODEL_URI"  # e.g., "models:/ocr_model/1" or path to local model folder
 
