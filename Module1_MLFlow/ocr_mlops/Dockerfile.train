@@ -17,5 +17,4 @@ COPY . .
 
 ENV PYTHONUNBUFFERED=1
 
-# default entry: run training with args passed to docker run
-ENTRYPOINT ["python", "src/ocr/trainer.py"]
+ENTRYPOINT ["bash", "./scripts/run_full_workflow.sh"]

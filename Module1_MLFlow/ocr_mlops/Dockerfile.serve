@@ -1,17 +1,33 @@
+# Use official Python 3.10 slim image as base for a lightweight container
 FROM python:3.10-slim
+
+# Set working directory inside the container
 WORKDIR /app
 
+# Install system dependencies required for image processing and cleanup package cache to reduce image size
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libjpeg-dev zlib1g-dev && rm -rf /var/lib/apt/lists/*
+    libjpeg-dev zlib1g-dev \
+    && rm -rf /var/lib/apt/lists/*
 
+# Copy Python dependencies file and install required packages
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy all source code into the container
 COPY src src
-COPY src/ocr/predictor.py src/ocr/predictor.py
 
+# Set environment variables for Flask and MLflow
+# FLASK_APP: Flask factory function entry point
+# PYTHONUNBUFFERED: ensures Python outputs logs in real time
+# MLFLOW_TRACKING_URI and MLFLOW_ARTIFACT_URI: local paths for MLflow tracking and artifacts
 ENV FLASK_APP=src.ocr.predictor:create_app
 ENV PYTHONUNBUFFERED=1
+ENV MLFLOW_TRACKING_URI=file:///app/mlruns
+ENV MLFLOW_ARTIFACT_URI=/app/mlartifacts
 
+# Expose port 5000 for the Flask application
 EXPOSE 5000
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "src.ocr.predictor:create_app()"]
+
+# Command to start the Flask application using Gunicorn WSGI server
+# Gunicorn will call the Flask factory function 'create_app' automatically
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "src.ocr.predictor:create_app"]
