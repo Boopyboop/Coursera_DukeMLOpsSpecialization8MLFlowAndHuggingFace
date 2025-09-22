@@ -89,7 +89,7 @@ def train_and_log(
         input_example = pd.DataFrame(X_train[:5])
 
         # Log the sklearn model using 'name' to avoid artifact_path deprecation warning
-        mlflow.sklearn.log_model(
+        model_info = mlflow.sklearn.log_model(
             sk_model=model,
             name="ocr_model",
             input_example=input_example
@@ -104,7 +104,7 @@ def train_and_log(
 
         print(f"Logged run with accuracy: {acc:.4f}")
         # return run info for tests or scripts
-        return run.info.run_id
+        return run, exp_id, model_info.model_uri
         
 
 if __name__ == "__main__":
@@ -116,10 +116,18 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     try:
-        run_id = train_and_log(args.experiment, args.alpha, args.max_iter, args.images_dir)
-    except Exception as e:
+        run, exp_id, model_uri = train_and_log(args.experiment, args.alpha, args.max_iter, args.images_dir)
+    except RuntimeError as e:
         print(f"Error occurred: {e}. Cleaning mlruns/ and retrying once...")
         clean_mlruns()
-        run_id = train_and_log(args.experiment, args.alpha, args.max_iter, args.images_dir)
+        run, exp_id, model_uri = train_and_log(args.experiment, args.alpha, args.max_iter, args.images_dir)
+    model_uri = model_uri.split("/")[-1]
+    #print("run_id:",run.info.run_id, flush=True)
+    #print("model_uri:",model_uri, flush=True)
+    #print("exp_id:",exp_id, flush=True)
+    print(f"{exp_id}:{run.info.run_id}:{model_uri}", flush=True)
+    
+    
 
-    print(f"Final run_id: {run_id}")
+
+
