@@ -1,0 +1,7 @@
+{
+    "files.autoSave": "afterDelay",
+    "editor.defaultFormatter": "GitHub.copilot-chat",
+    "editor.autoIndentOnPaste": true,
+    "editor.codeActionWidget.showHeaders": false,
+    "scm.compactFolders": false
+}
