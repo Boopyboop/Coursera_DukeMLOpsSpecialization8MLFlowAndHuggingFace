@@ -14,12 +14,38 @@ MODEL_URI_ENV = "OCR_MODEL_URI"  # e.g., "models:/ocr_model/1" or path to local 
 
 
 def load_model(model_uri: str | None = None) -> Any:
+    """
+    Load a model from MLflow using either:
+    - An explicit model_uri argument
+    - The OCR_MODEL_URI environment variable
+    
+    Supports both registry URIs (models:/...) and file URIs (file:///...).
+    """
     if model_uri is None:
         model_uri = os.environ.get(MODEL_URI_ENV)
+
     if not model_uri:
-        raise RuntimeError("No model URI provided. Set OCR_MODEL_URI env var or pass model_uri.")
-    model = mlflow.pyfunc.load_model(model_uri)
-    return model
+        raise RuntimeError(
+            f"No model URI provided. Set {MODEL_URI_ENV} env var or pass model_uri."
+        )
+
+    # Normalize model path for MLflow
+    if model_uri.startswith("file:///"):
+        # Keep it as file:///, MLflow understands this
+        pass
+    elif Path(model_uri).exists():
+        # Convert plain Windows path -> proper URI
+        model_uri = Path(model_uri).absolute().as_uri()
+
+    try:
+        # Works for both registry and file URIs
+        model = mlflow.pyfunc.load_model(model_uri)
+        return model
+    except Exception as e:
+        raise RuntimeError(
+            f"Failed to load model from URI: {model_uri}\n"
+            f"Error: {str(e)}"
+        ) from e
 
 
 def predict_from_image_path(model, image_path: str):
