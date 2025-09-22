@@ -214,3 +214,6 @@ __marimo__/
 # MLflow
 mlruns/
 mlartifacts/
+
+# Docker
+*.tar
